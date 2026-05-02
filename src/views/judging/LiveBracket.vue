@@ -28,7 +28,7 @@
         </n-grid-item>
         <n-grid-item span="4">
           <div v-if="selectedId" class="stat-info">
-            <n-button quaternary circle @click="initLiveBracket(selectedId)">
+            <n-button quaternary circle @click="initLiveBracket">
               <template #icon><n-icon><refresh-outline /></n-icon></template>
             </n-button>
           </div>
@@ -133,6 +133,7 @@ function startRealtime(competitionId) {
         filter: `competition_id=eq.${competitionId}` 
       }, 
       () => {
+        // Jika ada perubahan apa pun di tabel matches, tarik data terbaru
         judgingStore.fetchBrackets(competitionId)
       }
     )
@@ -157,11 +158,9 @@ function stopRealtime() {
 
 .bracket-view-area.live {
   min-height: calc(100vh - 250px);
-  background: #0f1218;
+  background: #0f1218; /* Darker background for live mode */
   border-radius: 20px;
   border: 1px solid #1e2430;
-  position: relative;
-  overflow: auto;
 }
 
 .initial-state {
@@ -182,9 +181,5 @@ function stopRealtime() {
   justify-content: center;
   background: rgba(0,0,0,0.5);
   z-index: 10;
-}
-
-.zoomable-bracket {
-  padding: 40px;
 }
 </style>

@@ -1,7 +1,7 @@
 <template>
   <div class="app-wrapper">
     <!-- Sidebar -->
-    <aside class="app-sidebar" :class="{ collapsed: sidebarCollapsed }">
+    <aside v-if="!isLocked" class="app-sidebar" :class="{ collapsed: sidebarCollapsed }">
       <!-- Brand -->
       <div class="sidebar-brand">
         <div class="brand-logo">A</div>
@@ -42,7 +42,7 @@
     <!-- Main Content -->
     <div class="app-content">
       <!-- Header -->
-      <header class="app-header">
+      <header v-if="!isLocked" class="app-header">
         <n-button text @click="sidebarCollapsed = !sidebarCollapsed">
           <template #icon><n-icon :component="Menu" size="20" /></template>
         </n-button>
@@ -90,6 +90,14 @@ const auth = useAuthStore()
 const router = useRouter()
 const route = useRoute()
 const sidebarCollapsed = ref(false)
+const isLocked = ref(!!localStorage.getItem('judge_lock'))
+
+// Monitor judge lock status dan route
+setInterval(() => {
+  const hasLock = !!localStorage.getItem('judge_lock')
+  // Sidebar hanya sembunyi jika terkunci DAN berada di halaman scoring
+  isLocked.value = hasLock && route.name === 'ScoringBoard'
+}, 500)
 
 const activeKey = computed(() => route.name)
 const userInitial = computed(() => auth.user?.email?.[0]?.toUpperCase() ?? 'A')
@@ -114,9 +122,17 @@ const menuOptions = computed(() => {
       key: 'master',
       icon: renderIcon(Options),
       children: [
-        { label: 'Institusi', key: 'Institutions', icon: renderIcon(Business) },
         { label: 'Parameter Kategori', key: 'Categories', icon: renderIcon(ListIcon) },
         { label: 'Bank Kriteria', key: 'CriteriaTemplates', icon: renderIcon(Document) },
+      ]
+    },
+    {
+      label: 'Kepesertaan',
+      key: 'ParticipantManagement',
+      icon: renderIcon(People),
+      children: [
+        { label: 'Institusi', key: 'Institutions', icon: renderIcon(Business) },
+        { label: 'Manajemen Peserta', key: 'Participants', icon: renderIcon(People) },
       ]
     },
     {
@@ -130,19 +146,16 @@ const menuOptions = computed(() => {
       ]
     },
     {
-      label: 'Kepesertaan',
-      key: 'Participants',
-      icon: renderIcon(People),
-    },
-    {
       type: 'divider',
       key: 'd2'
     },
     {
-      label: 'Penjurian',
+      label: 'Penjurian & Penilaian',
       key: 'judging',
       icon: renderIcon(Scale),
       children: [
+        { label: 'Daftar Juri', key: 'JudgeManagement', icon: renderIcon(People) },
+        { label: 'Plotting Juri', key: 'JudgePlotting', icon: renderIcon(Options) },
         { label: 'Scoring Board', key: 'ScoringBoard', icon: renderIcon(Chart) },
         { label: 'Bracket Manager', key: 'BracketManager', icon: renderIcon(Bracket) },
       ]

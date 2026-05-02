@@ -1,23 +1,67 @@
-export function generateBracket(participants) {
+export function generateBracket(participants, sizePerMatch = 2) {
   const shuffled = [...participants].sort(() => Math.random() - 0.5)
-  const size = Math.pow(2, Math.ceil(Math.log2(Math.max(shuffled.length, 2))))
-  while (shuffled.length < size) { shuffled.push(null) }
-  const brackets = []; const totalRounds = Math.log2(size)
-  for (let i = 0; i < size; i += 2) {
-    const pA = shuffled[i]; const pB = shuffled[i + 1]; const matchNumber = (i / 2) + 1
-    let winnerId = null; let status = 'pending'
-    if (pA === null && pB !== null) { winnerId = pB.id; status = 'done' }
-    else if (pA !== null && pB === null) { winnerId = pA.id; status = 'done' }
-    else if (pA === null && pB === null) { status = 'done' }
-    brackets.push({ round: 1, match_number: matchNumber, participant_a: pA?.id || null, participant_b: pB?.id || null, winner_id: winnerId, status: status })
+  
+  // Hitung total ronde yang dibutuhkan berdasarkan log_N (N = sizePerMatch)
+  const rounds = Math.ceil(Math.log(Math.max(shuffled.length, 2)) / Math.log(sizePerMatch)) || 1
+  const totalSlots = Math.pow(sizePerMatch, rounds)
+  
+  // Padding dengan NULL (BYE) agar jumlahnya pas dengan kelipatan pangkat sizePerMatch
+  while (shuffled.length < totalSlots) {
+    shuffled.push(null)
   }
-  for (let r = 2; r <= totalRounds; r++) {
-    const matchCount = size / Math.pow(2, r)
-    for (let m = 1; m <= matchCount; m++) { brackets.push({ round: r, match_number: m, participant_a: null, participant_b: null, winner_id: null, status: 'pending' }) }
+  
+  const brackets = []
+
+  // Generate Babak 1
+  for (let i = 0; i < totalSlots; i += sizePerMatch) {
+    const matchParticipants = shuffled.slice(i, i + sizePerMatch)
+    const matchNumber = (i / sizePerMatch) + 1
+    
+    // Cek Auto-Winner jika hanya ada 1 peserta asli (sisanya BYE)
+    const nonNulls = matchParticipants.filter(p => p !== null)
+    let winnerId = null
+    let status = 'pending'
+    
+    if (nonNulls.length === 1) {
+      winnerId = nonNulls[0].id
+      status = 'done'
+    } else if (nonNulls.length === 0) {
+      status = 'done'
+    }
+
+    brackets.push({
+      round: 1,
+      match_number: matchNumber,
+      participants: matchParticipants.map(p => p?.id || null),
+      winner_id: winnerId,
+      status: status
+    })
   }
+
+  // Generate Babak Selanjutnya (Slot Kosong)
+  for (let r = 2; r <= rounds; r++) {
+    const matchCount = totalSlots / Math.pow(sizePerMatch, r)
+    for (let m = 1; m <= matchCount; m++) {
+      brackets.push({
+        round: r,
+        match_number: m,
+        participants: new Array(sizePerMatch).fill(null),
+        winner_id: null,
+        status: 'pending'
+      })
+    }
+  }
+
   return brackets
 }
-export function getNextRoundSlot(currentBracket) {
-  const nextMatchNumber = Math.ceil(currentBracket.match_number / 2); const isSlotA = currentBracket.match_number % 2 !== 0
-  return { round: currentBracket.round + 1, match_number: nextMatchNumber, slot: isSlotA ? 'participant_a' : 'participant_b' }
+
+export function getNextRoundSlot(currentBracket, sizePerMatch = 2) {
+  const nextMatchNumber = Math.ceil(currentBracket.match_number / sizePerMatch)
+  const slotIndex = (currentBracket.match_number - 1) % sizePerMatch
+  
+  return { 
+    round: currentBracket.round + 1, 
+    match_number: nextMatchNumber, 
+    slotIndex: slotIndex 
+  }
 }

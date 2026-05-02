@@ -26,8 +26,10 @@ const routes = [
       // Participants
       { path: 'participants', name: 'Participants', component: () => import('@/views/participants/ParticipantHub.vue') },
       // Judging
-      { path: 'judging/scoring', name: 'ScoringBoard', component: () => import('@/views/judging/ScoringBoard.vue'), meta: { roles: ['admin', 'juri'] } },
-      { path: 'judging/bracket', name: 'BracketManager', component: () => import('@/views/judging/BracketManager.vue'), meta: { roles: ['admin', 'juri'] } },
+      { path: 'judging/judges', name: 'JudgeManagement', component: () => import('@/views/judging/JudgeManagementView.vue') },
+      { path: 'judging/plotting', name: 'JudgePlotting', component: () => import('@/views/judging/JudgePlottingView.vue') },
+      { path: 'judging/scoring', name: 'ScoringBoard', component: () => import('@/views/judging/ScoringBoard.vue') },
+      { path: 'judging/bracket', name: 'BracketManager', component: () => import('@/views/judging/BracketManager.vue') },
       // Live Center
       { path: 'live/leaderboard', name: 'Leaderboard', component: () => import('@/views/live/Leaderboard.vue') },
       { path: 'live/bracket', name: 'LiveBracket', component: () => import('@/views/live/LiveBracket.vue') },
